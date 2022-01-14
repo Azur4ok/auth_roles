@@ -10,7 +10,7 @@ const generateAccessToken = (id, roles) => {
         id,
         roles
     }
-    return jwt.sign(payload, secret, {expiresIn: "12h"});
+    return jwt.sign(payload, secret, {expiresIn: "24h"});
 }
 
 class AuthController {
@@ -25,7 +25,7 @@ class AuthController {
             if(candidate)
                 return response.status(400).json({message: "Пользователь с таким именем уже существует"});
             const hashedPassword = bcrypt.hashSync(password, 8);
-            const userRole = await Role.findOne({value: "user"});
+            const userRole = await Role.findOne({value: "admin"});
             const user = new User({username, password: hashedPassword, roles: [userRole.value]})
             await user.save()
             return response.json({message: "Пользователь успешно зарегистрирован"})
@@ -42,7 +42,7 @@ class AuthController {
             if(!user) {
                 return response.status(400).json({message: `пользователь ${username} не найден`})
             }
-            const validPassword =bcrypt.compareSync(password, user.password);
+            const validPassword = bcrypt.compareSync(password, user.password);
             if(!validPassword) {
                 return response.status(400).json({message: `введен неверный пароль`})
             }
@@ -56,9 +56,10 @@ class AuthController {
 
     async getUsers(request, response) {
         try {
-            response.json("server works")
+            const users = await User.find();
+            response.json(users)
         } catch (e) {
-
+            console.log(e)
         }
     }
 }
